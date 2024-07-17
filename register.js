@@ -8,7 +8,7 @@ const app = express();
 app.use(bodyParser.json());
 
 const db = mysql.createConnection({
-  host: 'ec2-54-152-20-212.compute-1.amazonaws.com',     
+  host: 'ec2-44-212-120-131.compute-1.amazonaws.com',     
   user: 'user', // The user should be 'root' or the username without the IP
   password: 'password',  
   database: 'db',   
