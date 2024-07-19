@@ -1,30 +1,49 @@
-const express = require('express');
+const mysql = require('mysql2');
 
+const dbConfig = {
+  host: 'ec2-44-212-120-131.compute-1.amazonaws.com',   // e.g., 'localhost' or the IP address of your DB server
+  user: 'user',   // e.g., 'root'
+  password: 'password',  // your database password
+  database: 'db',  // your database name
+  port: 3306,
+};
+
+let connection;
+
+function handleDisconnect() {
+  connection = mysql.createConnection(dbConfig);
+
+  connection.connect((err) => {
+    if (err) {
+      console.error('Error connecting to MySQL:', err);
+      setTimeout(handleDisconnect, 2000); // Retry connection after 2 seconds
+    } else {
+      console.log('MySQL Connected...');
+    }
+  });
+
+  connection.on('error', (err) => {
+    console.error('MySQL error', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      handleDisconnect(); // Reconnect if the connection is lost
+    } else {
+      throw err;
+    }
+  });
+}
+
+handleDisconnect();
+
+
+
+
+const express = require('express');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
-const mysql = require('mysql2');
 
 const app = express();
 app.use(bodyParser.json());
 
-const db = mysql.createConnection({
-  host: 'ec2-44-212-120-131.compute-1.amazonaws.com',     
-  user: 'user', // The user should be 'root' or the username without the IP
-  password: 'password',  
-  database: 'db',   
-  port: 3306,
-});
-
-// Connect to the database
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to MySQL:', err);
-    process.exit(1);  // Exit with a failure status code
-  }
-  console.log('MySQL Connected...');
-});
-
-// Registration endpoint
 app.post('/register', (req, res) => {
   const { username, password, email } = req.body;
 
@@ -33,7 +52,7 @@ app.post('/register', (req, res) => {
   }
 
   // Check if the user already exists
-  db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email], (err, results) => {
+  connection.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email], (err, results) => {
     if (err) {
       console.error('Error querying database:', err);
       return res.status(500).json({ message: 'Server error', error: err.message });
@@ -51,7 +70,7 @@ app.post('/register', (req, res) => {
 
       // Insert the new user into the database
       const newUser = { username, password: hashedPassword, email };
-      db.query('INSERT INTO users SET ?', newUser, (err, result) => {
+      connection.query('INSERT INTO users SET ?', newUser, (err, result) => {
         if (err) {
           console.error('Error inserting user into database:', err);
           return res.status(500).json({ message: 'Server error', error: err.message });
