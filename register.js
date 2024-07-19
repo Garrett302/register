@@ -1,10 +1,23 @@
+const express = require('express');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const bodyParser = require('body-parser');
 const mysql = require('mysql2');
 
+const app = express();
+
+// Use CORS middleware
+app.use(cors({
+  origin: 'http://localhost:3000', // Adjust this to your React app's URL if needed
+}));
+
+app.use(bodyParser.json());
+
 const dbConfig = {
-  host: 'ec2-44-212-120-131.compute-1.amazonaws.com',   // e.g., 'localhost' or the IP address of your DB server
-  user: 'user',   // e.g., 'root'
-  password: 'password',  // your database password
-  database: 'db',  // your database name
+  host: 'db',
+  user: 'user',
+  password: 'password',
+  database: 'db',
   port: 3306,
 };
 
@@ -34,16 +47,6 @@ function handleDisconnect() {
 
 handleDisconnect();
 
-
-
-
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const bodyParser = require('body-parser');
-
-const app = express();
-app.use(bodyParser.json());
-
 app.post('/register', (req, res) => {
   const { username, password, email } = req.body;
 
@@ -51,7 +54,6 @@ app.post('/register', (req, res) => {
     return res.status(400).json({ message: 'Please provide all required fields' });
   }
 
-  // Check if the user already exists
   connection.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email], (err, results) => {
     if (err) {
       console.error('Error querying database:', err);
@@ -61,14 +63,12 @@ app.post('/register', (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password
     bcrypt.hash(password, 10, (err, hashedPassword) => {
       if (err) {
         console.error('Error hashing password:', err);
         return res.status(500).json({ message: 'Error hashing password', error: err.message });
       }
 
-      // Insert the new user into the database
       const newUser = { username, password: hashedPassword, email };
       connection.query('INSERT INTO users SET ?', newUser, (err, result) => {
         if (err) {
@@ -81,7 +81,6 @@ app.post('/register', (req, res) => {
   });
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
