@@ -8,7 +8,7 @@ const app = express();
 
 // Use CORS middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Adjust this to your React app's URL if needed
+  origin: 'http://192.168.1.176:3000', // Adjust this to your React app's URL if needed
 }));
 
 app.use(bodyParser.json());
