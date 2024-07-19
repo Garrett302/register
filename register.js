@@ -14,7 +14,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 const dbConfig = {
-  host: 'db',
+  host: '44.212.120.131',
   user: 'user',
   password: 'password',
   database: 'db',
