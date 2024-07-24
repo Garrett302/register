@@ -9,7 +9,7 @@ const app = express();
 
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true, // Allow credentials
+  credentials: true,
 }));
 
 app.use(bodyParser.json());
@@ -88,7 +88,7 @@ app.post('/register', (req, res) => {
         // Set the token as a cookie
         res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'Lax', path:'/' });
 
-        res.status(201).json({ message: 'User registered successfully' });
+        res.status(201).json({ message: 'User registered successfully', token });
       });
     });
   });
