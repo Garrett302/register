@@ -3,15 +3,17 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');
-
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const app = express();
 
-// Use CORS middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Adjust this to your React app's URL if needed
+  origin: 'http://localhost:3000',
+  credentials: true, // Allow credentials
 }));
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 const dbConfig = {
   host: '44.212.120.131',
@@ -47,6 +49,10 @@ function handleDisconnect() {
 
 handleDisconnect();
 
+// Secret key for JWT
+const JWT_SECRET = 'your_jwt_secret'; // Replace with your actual secret
+
+// Register endpoint
 app.post('/register', (req, res) => {
   const { username, password, email } = req.body;
 
@@ -75,6 +81,13 @@ app.post('/register', (req, res) => {
           console.error('Error inserting user into database:', err);
           return res.status(500).json({ message: 'Server error', error: err.message });
         }
+
+        // Create a token
+        const token = jwt.sign({ id: result.insertId, username: newUser.username }, JWT_SECRET, { expiresIn: '1h' });
+
+        // Set the token as a cookie
+        res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'Strict' });
+
         res.status(201).json({ message: 'User registered successfully' });
       });
     });
