@@ -86,7 +86,7 @@ app.post('/register', (req, res) => {
         const token = jwt.sign({ id: result.insertId, username: newUser.username }, JWT_SECRET, { expiresIn: '1h' });
 
         // Set the token as a cookie
-        res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'Lax' });
+        res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'Lax', path:'/' });
 
         res.status(201).json({ message: 'User registered successfully' });
       });
