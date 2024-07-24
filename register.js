@@ -50,7 +50,7 @@ function handleDisconnect() {
 handleDisconnect();
 
 // Secret key for JWT
-const JWT_SECRET = 'your_jwt_secret'; // Replace with your actual secret
+const JWT_SECRET = 'imgay'; // Replace with your actual secret
 
 // Register endpoint
 app.post('/register', (req, res) => {
